@@ -29,7 +29,7 @@
 #define __MAIN_H__
 
 /* version */
-#define WATCHDOG_CTL_VERSION "1.0"
+#define WATCHDOG_CTL_VERSION "1.1"
 
 /* path to watchdog */
 #define WATCHDOG_PATH "/dev/watchdog"

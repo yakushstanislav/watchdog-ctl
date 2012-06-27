@@ -7,3 +7,8 @@ Usage: watchdog-ctl [options]
 -g or --get-timeout - get timeout for watchdog timer
 -r or --reset - reset watchdog timer
 -h or --help - show this message and exit
+
+Installation
+
+$ make all
+$ sudo make install
