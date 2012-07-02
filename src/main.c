@@ -25,15 +25,42 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#if defined(__linux__)
+	#define _XOPEN_SOURCE 700
+#else
+	#define _XOPEN_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "main.h"
 #include "watchdog-api.h"
 
 int loop = 0;
+
+void sigterm_handler(int sig)
+{
+	NOTUSED(sig);
+
+	printf("Received SIGTERM...\n");
+
+	exit(0);
+}
+
+void setup_signals(void)
+{
+	struct sigaction sig;
+
+	sigemptyset(&sig.sa_mask);
+	sig.sa_flags = SA_NODEFER | SA_ONSTACK | SA_RESETHAND;
+	sig.sa_handler = sigterm_handler;
+
+	sigaction(SIGTERM, &sig, NULL);
+}
 
 void usage(void)
 {
@@ -87,7 +114,10 @@ void parse_args(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-	int timeout;
+	signal(SIGHUP, SIG_IGN);
+	signal(SIGPIPE, SIG_IGN);
+
+	setup_signals();
 
 	if (watchdog_ctl(WATCHDOG_PATH, WATCHDOG_TEST, 0) == -1) {
 		fprintf(stderr, "Error open watchdog device %s\n", WATCHDOG_PATH);
@@ -97,6 +127,8 @@ int main(int argc, char *argv[])
 
 	if (loop)
 	{
+		int timeout;
+
 		if ((timeout = watchdog_ctl(WATCHDOG_PATH, WATCHDOG_GET_TIMEOUT, 0)) == -1) {
 			fprintf(stderr, "Error start infinity loop\n");
 			return -1;

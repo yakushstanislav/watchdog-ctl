@@ -28,6 +28,8 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+#define NOTUSED(X) ((void)X)
+
 /* version */
 #define WATCHDOG_CTL_VERSION "1.1"
 
