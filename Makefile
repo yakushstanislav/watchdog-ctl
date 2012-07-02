@@ -18,3 +18,5 @@ install:
 
 uninstall:
 	rm $(WATCHDOG_CTL_DESTINATION_PATH)
+
+update: uninstall install
