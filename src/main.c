@@ -35,12 +35,36 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <signal.h>
 
 #include "main.h"
 #include "watchdog-api.h"
 
 int loop = 0;
+
+void daemonize(void)
+{
+	int fd;
+
+	if (fork() != 0) {
+		exit(0);
+	}
+
+	setsid();
+
+	if ((fd = open("/dev/null", O_RDWR, 0)) != -1)
+	{
+		dup2(fd, STDIN_FILENO);
+		dup2(fd, STDOUT_FILENO);
+		dup2(fd, STDERR_FILENO);
+		if (fd > STDERR_FILENO) {
+			close(fd);
+		}
+	}
+}
 
 void sigterm_handler(int sig)
 {
@@ -67,6 +91,7 @@ void usage(void)
 	printf(
 		"watchdog-ctl %s\n"
 		"Usage: watchdog-ctl [options]\n"
+		"--daemon - run as daemon\n"
 		"-e or --enable - enable watchdog timer\n"
 		"-d or --disable - disable watchdog timer\n"
 		"-s <arg> or --set-timeout <arg> - set timeout to watchdog timer\n"
@@ -85,7 +110,9 @@ void parse_args(int argc, char *argv[])
 	{
 		last_arg = i == argc - 1;
 
-		if (!strcmp(argv[i], "-e") || !strcmp(argv[i], "--enable")) {
+		if (!strcmp(argv[i], "--daemon")) {
+			daemonize();
+		} else if (!strcmp(argv[i], "-e") || !strcmp(argv[i], "--enable")) {
 			printf("Enable watchdog timer\n");
 			watchdog_ctl(WATCHDOG_PATH, WATCHDOG_ENABLE, 0);
 		} else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--disable")) {

@@ -1,6 +1,7 @@
 watchdog-ctl - simple tool for control watchdog timer.
 
 Usage: watchdog-ctl [options]
+--daemon - run as daemon
 -e or --enable - enable watchdog timer
 -d or --disable - disable watchdog timer
 -s <arg> or --set-timeout <arg> - set timeout to watchdog timer
