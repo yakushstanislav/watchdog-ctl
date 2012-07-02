@@ -28,9 +28,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "main.h"
 #include "watchdog-api.h"
+
+int loop = 0;
 
 void usage(void)
 {
@@ -42,6 +45,7 @@ void usage(void)
 		"-s <arg> or --set-timeout <arg> - set timeout to watchdog timer\n"
 		"-g or --get-timeout - get timeout for watchdog timer\n"
 		"-r or --reset - reset watchdog timer\n"
+		"-l or --loop - reset watchdog timer in infinity loop\n"
 		"-h or --help - show this message and exit\n",
 		WATCHDOG_CTL_VERSION);
 }
@@ -70,6 +74,8 @@ void parse_args(int argc, char *argv[])
 		} else if (!strcmp(argv[i], "-r") || !strcmp(argv[i], "--reset")) {
 			printf("Reset watchdog\n");
 			watchdog_ctl(WATCHDOG_PATH, WATCHDOG_RESET, 0);
+		} else if (!strcmp(argv[i], "-l") || !strcmp(argv[i], "--loop")) {
+			loop = 1;
 		} else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
 			usage();
 			exit(0);
@@ -81,11 +87,27 @@ void parse_args(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+	int timeout;
+
 	if (watchdog_ctl(WATCHDOG_PATH, WATCHDOG_TEST, 0) == -1) {
 		fprintf(stderr, "Error open watchdog device %s\n", WATCHDOG_PATH);
 	}
 
 	parse_args(argc, argv);
+
+	if (loop)
+	{
+		if ((timeout = watchdog_ctl(WATCHDOG_PATH, WATCHDOG_GET_TIMEOUT, 0)) == -1) {
+			fprintf(stderr, "Error start infinity loop\n");
+			return -1;
+		}
+
+		printf("Infinity loop with timeout %d started...\n", --timeout);
+		for (;;) {
+			watchdog_ctl(WATCHDOG_PATH, WATCHDOG_RESET, 0);
+			sleep(timeout);
+		}
+	}
 
 	return 0;
 }

@@ -6,6 +6,7 @@ Usage: watchdog-ctl [options]
 -s <arg> or --set-timeout <arg> - set timeout to watchdog timer
 -g or --get-timeout - get timeout for watchdog timer
 -r or --reset - reset watchdog timer
+-l or --loop - reset watchdog timer in infinity loop
 -h or --help - show this message and exit
 
 Installation
